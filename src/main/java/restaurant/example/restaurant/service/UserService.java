@@ -1,5 +1,6 @@
 package restaurant.example.restaurant.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -29,5 +30,9 @@ public class UserService {
 
     public User handelUpdateUser(User updateUser) {
         return this.userRepository.save(updateUser);
+    }
+
+    public List<User> handelGetAllUser() {
+        return this.userRepository.findAll();
     }
 }
