@@ -35,4 +35,8 @@ public class UserService {
     public List<User> handelGetAllUser() {
         return this.userRepository.findAll();
     }
+
+    public User handelGetUserByUsername(String email) {
+        return this.userRepository.findByEmail(email);
+    }
 }
