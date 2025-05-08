@@ -39,6 +39,8 @@ public class AuthController {
         // create token
         String access_token = this.securityUtil.createToken(authentication);
 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         ResLoginDTO res = new ResLoginDTO();
         res.setAccessToken(access_token);
         return ResponseEntity.ok().body(res);
