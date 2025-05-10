@@ -1,19 +1,26 @@
 package restaurant.example.restaurant.domain;
 
+import java.time.Instant;
+
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import restaurant.example.restaurant.util.SecurityUtil;
 
 @Entity
 @Table(name = "roles")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;         // Ví dụ: ROLE_USER, ROLE_ADMIN
+    private String name; // Ví dụ: ROLE_USER, ROLE_ADMIN
 
     private String description;
 
@@ -24,12 +31,18 @@ public class Role {
     private String updatedBy;
 
     @PrePersist
-    public void prePersist() {
-        this.createdAt = java.time.Instant.now();
+    public void handleBeforeCreate() {
+        this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
+        this.createdAt = Instant.now();
     }
 
     @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = java.time.Instant.now();
+    public void handleBeforeUpdate() {
+        this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
+        this.updatedAt = Instant.now();
     }
 }

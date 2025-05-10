@@ -1,8 +1,11 @@
 package restaurant.example.restaurant.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import restaurant.example.restaurant.util.SecurityUtil;
 
 import java.time.Instant;
 
@@ -10,6 +13,8 @@ import java.time.Instant;
 @Table(name = "dishes")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Dish {
 
     @Id
@@ -24,7 +29,7 @@ public class Dish {
 
     private String imageUrl;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "category_id")
     private Category category;
 
@@ -37,11 +42,17 @@ public class Dish {
 
     @PrePersist
     public void handleBeforeCreate() {
+        this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
         this.createdAt = Instant.now();
     }
 
     @PreUpdate
     public void handleBeforeUpdate() {
+        this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
         this.updatedAt = Instant.now();
     }
 }
