@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "carts")
 @Getter
@@ -17,10 +19,15 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Người sở hữu giỏ hàng
-    @ManyToOne
+    // user_id
+    @OneToOne()
     @JoinColumn(name = "user_id")
     private User user;
+
+    // cart_detail_id
+    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY)
+    @JsonIgnore
+    List<CartDetail> cartDetails;
 
     private Boolean checkedOut = false;
 
@@ -28,7 +35,6 @@ public class Cart {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-
 
     @PrePersist
     public void handleBeforeCreate() {

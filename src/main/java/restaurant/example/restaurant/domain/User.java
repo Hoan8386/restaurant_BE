@@ -45,4 +45,5 @@ public class User {
     public void handleBeforeUpdate() {
         this.updatedAt = Instant.now();
     }
+
 }

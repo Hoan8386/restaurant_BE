@@ -1,29 +1,40 @@
 package restaurant.example.restaurant.domain;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+@Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Người dùng đặt hàng (giả định đã có entity User)
+    private double totalPrice;
+
+    private String receiverName;
+
+    private String receiverAddress;
+
+    private String receiverPhone;
+
+    private String status;
+
+    // user id
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    private Instant orderTime;
-
-    private String status; // Ví dụ: PENDING, CONFIRMED, DELIVERING, COMPLETED, CANCELLED
-
-    private Double totalPrice;
-
-    private String deliveryAddress;
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<OrderDetail> orderDetails;
 
     private Instant createdAt;
     private Instant updatedAt;

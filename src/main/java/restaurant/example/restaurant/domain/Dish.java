@@ -7,10 +7,10 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Entity
-@Table(name = "foods")
+@Table(name = "dishes")
 @Getter
 @Setter
-public class Food {
+public class Dish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,9 @@ public class Food {
 
     private String imageUrl;
 
-    private String category; // ví dụ: "Món chính", "Đồ uống", "Tráng miệng"
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     private Boolean available = true;
 
