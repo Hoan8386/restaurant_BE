@@ -1,6 +1,9 @@
 package restaurant.example.restaurant.domain;
 
 import java.time.Instant;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,6 +32,10 @@ public class Role {
     private java.time.Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<User> users;
 
     @PrePersist
     public void handleBeforeCreate() {

@@ -8,6 +8,9 @@ import lombok.Setter;
 import restaurant.example.restaurant.util.SecurityUtil;
 
 import java.time.Instant;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
@@ -31,8 +34,6 @@ public class User {
 
     private String address;
 
-    private String role;
-
     private Instant createdAt;
 
     private Instant updatedAt;
@@ -40,6 +41,17 @@ public class User {
     private String createdBy;
 
     private String updatedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Order> orders;
+
+    @OneToOne(mappedBy = "user")
+    private Cart cart;
 
     @PrePersist
     public void handleBeforeCreate() {
