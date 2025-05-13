@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import restaurant.example.restaurant.domain.Dish;
@@ -29,8 +30,8 @@ public class DishService {
         return this.dishRepository.findById(id);
     }
 
-    public ResultPaginationDataDTO handleGetAllDish(Pageable pageable) {
-        Page<Dish> pageUser = this.dishRepository.findAll(pageable);
+    public ResultPaginationDataDTO handleGetAllDish(Specification<Dish> spec, Pageable pageable) {
+        Page<Dish> pageUser = this.dishRepository.findAll(spec, pageable);
         ResultPaginationDataDTO rs = new ResultPaginationDataDTO();
         Meta meta = new Meta();
         meta.setPage(pageUser.getNumber() + 1);
