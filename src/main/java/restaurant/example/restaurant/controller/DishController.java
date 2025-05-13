@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import restaurant.example.restaurant.domain.Dish;
+import restaurant.example.restaurant.domain.DTO.ResultPaginationDataDTO;
 import restaurant.example.restaurant.service.DishService;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class DishController {
     }
 
     @GetMapping("/dish")
-    public ResponseEntity<List<Dish>> getAllDish(
+    public ResponseEntity<ResultPaginationDataDTO> getAllDish(
             @RequestParam("current") Optional<String> currentOptional,
             @RequestParam("pageSize") Optional<String> pageSizeOptional) {
         String sCurrent = currentOptional.isPresent() ? currentOptional.get() : "";
