@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.service.UserService;
+import restaurant.example.restaurant.util.anotation.ApiMessage;
 import restaurant.example.restaurant.util.error.IdInvalidException;
 
 import java.util.List;
@@ -58,6 +59,7 @@ public class UserController {
 
     // get user
     @GetMapping("/users")
+    @ApiMessage("fetch all users")
     public ResponseEntity<List<User>> getAllUser() {
         return ResponseEntity.status(HttpStatus.OK).body(this.userService.handelGetAllUser());
     }

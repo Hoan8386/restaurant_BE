@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import jakarta.servlet.http.HttpServletResponse;
 import restaurant.example.restaurant.domain.response.RestResponse;
+import restaurant.example.restaurant.util.anotation.ApiMessage;
 
 //  file này có nghĩa là trước khi phản hồi lại dười dùng thì format lại dữ liệu
 @ControllerAdvice
@@ -44,8 +45,9 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
             return body;
 
         } else {
-            res.setMessage("call api success");
+            ApiMessage message = returnType.getMethodAnnotation(ApiMessage.class);
             res.setData(body);
+            res.setMessage(message != null ? message.value() : "Call Api Success");
         }
         return res;
     }
