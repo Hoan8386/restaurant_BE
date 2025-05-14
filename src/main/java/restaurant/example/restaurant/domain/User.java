@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import restaurant.example.restaurant.util.SecurityUtil;
+import restaurant.example.restaurant.util.constant.GenderEnum;
 
 import java.time.Instant;
 import java.util.List;
@@ -33,6 +34,11 @@ public class User {
     private String phone;
 
     private String address;
+
+    private String refreshToken;
+
+    @Enumerated(EnumType.STRING)
+    private GenderEnum gender;
 
     private Instant createdAt;
 
