@@ -7,8 +7,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
+import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.DTO.LoginDTO;
 import restaurant.example.restaurant.domain.DTO.ResLoginDTO;
+import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.SecurityUtil;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,10 +20,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
+    private final UserService userService;
 
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
+            SecurityUtil securityUtil, UserService userService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -42,7 +47,16 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         ResLoginDTO res = new ResLoginDTO();
+        User currentUserBD = this.userService.handelGetUserByUsername(loginDTO.getUsername());
         res.setAccessToken(access_token);
+
+        if (currentUserBD != null) {
+            ResLoginDTO.UserLogin user = res.new UserLogin();
+            user.setEmail(currentUserBD.getEmail());
+            user.setId(currentUserBD.getId());
+            user.setName(currentUserBD.getUsername());
+            res.setUser(user);
+        }
         return ResponseEntity.ok().body(res);
     }
 }
