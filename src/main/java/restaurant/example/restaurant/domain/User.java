@@ -35,6 +35,7 @@ public class User {
 
     private String address;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
 
     @Enumerated(EnumType.STRING)

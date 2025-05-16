@@ -1,5 +1,8 @@
 package restaurant.example.restaurant.controller;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -22,6 +25,9 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final UserService userService;
 
+    @Value("${restaurant.jwt.refresh-token-validity-in-seconds}")
+    private long refreshJwtExpiration;
+
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
             SecurityUtil securityUtil, UserService userService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
@@ -42,7 +48,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // create token
-        String access_token = this.securityUtil.createToken(authentication);
+        String access_token = this.securityUtil.createAccessToken(authentication);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -57,6 +63,19 @@ public class AuthController {
             user.setName(currentUserBD.getUsername());
             res.setUser(user);
         }
-        return ResponseEntity.ok().body(res);
+        String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
+
+        // update user
+        this.userService.updateUserToken(refresh_token, loginDTO.getUsername());
+
+        // set cookies
+        ResponseCookie responseCookies = ResponseCookie.from("refresh_token", refresh_token).httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshJwtExpiration)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, responseCookies.toString())
+                .body(res);
     }
 }

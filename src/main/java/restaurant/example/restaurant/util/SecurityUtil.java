@@ -25,14 +25,18 @@ import org.springframework.stereotype.Service;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
 
+import restaurant.example.restaurant.domain.DTO.ResLoginDTO;
+
 @Service
 public class SecurityUtil {
     @Value("${restaurant.jwt.base64-secret}")
     private String jwtKey;
 
-    @Value("${restaurant.jwt.token-validity-in-seconds}")
-    private long jwtExpiration;
+    @Value("${restaurant.jwt.access-token-validity-in-seconds}")
+    private long accessJwtExpiration;
 
+    @Value("${restaurant.jwt.refresh-token-validity-in-seconds}")
+    private long refreshJwtExpiration;
     private final JwtEncoder jwtEncoder;
 
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
@@ -41,10 +45,10 @@ public class SecurityUtil {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String createToken(Authentication authentication) {
+    public String createAccessToken(Authentication authentication) {
 
         Instant now = Instant.now();
-        Instant validity = now.plus(this.jwtExpiration, ChronoUnit.SECONDS);
+        Instant validity = now.plus(this.accessJwtExpiration, ChronoUnit.SECONDS);
 
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -57,6 +61,25 @@ public class SecurityUtil {
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
+
+     public String createRefreshToken(String email , ResLoginDTO dto) {
+
+        Instant now = Instant.now();
+        Instant validity = now.plus(this.refreshJwtExpiration, ChronoUnit.SECONDS);
+
+        // @formatter:off
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+            .issuedAt(now)
+            .expiresAt(validity)
+            .subject(email)
+            // thêm thông tin người dùng vào payload 
+            .claim("user", dto.getUser())
+            .build();
+
+        JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
+        return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
+    }
+ 
 
     /**
      * Get the login of the current user.
