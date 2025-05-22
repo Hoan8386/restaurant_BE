@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.Cookie;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.DTO.LoginDTO;
 import restaurant.example.restaurant.domain.DTO.ResLoginDTO;
@@ -54,9 +55,6 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // create token
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
         ResLoginDTO res = new ResLoginDTO();
         User currentUserBD = this.userService.handelGetUserByUsername(loginDTO.getUsername());
 
@@ -151,4 +149,23 @@ public class AuthController {
                 .body(res);
     }
 
+    @GetMapping("/auth/logout")
+    @ApiMessage("Logout user ")
+    public ResponseEntity<Void> logout() {
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+
+        this.userService.updateUserToken(null, email);
+
+        // set cookies
+        ResponseCookie responseCookies = ResponseCookie
+                .from("refresh_token", null).httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, responseCookies.toString())
+                .body(null);
+
+    }
 }
