@@ -17,6 +17,7 @@ import restaurant.example.restaurant.domain.DTO.ResLoginDTO;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.SecurityUtil;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
+import restaurant.example.restaurant.util.error.IdInvalidException;
 
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,7 +68,7 @@ public class AuthController {
             res.setUser(user);
         }
 
-        String access_token = this.securityUtil.createAccessToken(authentication, res.getUser());
+        String access_token = this.securityUtil.createAccessToken(authentication.getName(), res.getUser());
         res.setAccessToken(access_token);
 
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
@@ -104,11 +105,50 @@ public class AuthController {
 
     @GetMapping("/auth/refresh")
     @ApiMessage("Get user by refresh token")
-    public ResponseEntity<String> getRefreshToken(@CookieValue(name = "refresh_token") String refresh_token) {
+    public ResponseEntity<ResLoginDTO> getRefreshToken(
+            @CookieValue(name = "refresh_token", defaultValue = "abc") String refresh_token)
+            throws IdInvalidException {
+        if (refresh_token.equals("abc")) {
+            throw new IdInvalidException("Bạn không có refresh token ở cookies");
+        }
         // check valid
         Jwt decodeToken = this.securityUtil.checkValidRefreshToken(refresh_token);
         String email = decodeToken.getSubject();
-        return ResponseEntity.ok().body(email);
+
+        // check use by token and email
+        User currentUser = this.userService.getUserByRefreshTokenAndEmail(refresh_token, email);
+        if (currentUser == null) {
+            throw new IdInvalidException("refresh token không hợp lệ");
+        }
+        ResLoginDTO res = new ResLoginDTO();
+        User currentUserBD = this.userService.handelGetUserByUsername(email);
+
+        if (currentUserBD != null) {
+            ResLoginDTO.UserLogin user = res.new UserLogin();
+            user.setEmail(currentUserBD.getEmail());
+            user.setId(currentUserBD.getId());
+            user.setName(currentUserBD.getUsername());
+            res.setUser(user);
+        }
+
+        String access_token = this.securityUtil.createAccessToken(email, res.getUser());
+        res.setAccessToken(access_token);
+
+        String newRefreshToken = this.securityUtil.createRefreshToken(email, res);
+
+        // update user
+        this.userService.updateUserToken(refresh_token, email);
+
+        // set cookies
+        ResponseCookie responseCookies = ResponseCookie
+                .from("refresh_token", newRefreshToken).httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshJwtExpiration)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, responseCookies.toString())
+                .body(res);
     }
 
 }

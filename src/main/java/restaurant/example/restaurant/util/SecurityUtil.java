@@ -46,7 +46,7 @@ public class SecurityUtil {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String createAccessToken(Authentication authentication, ResLoginDTO.UserLogin user) {
+    public String createAccessToken(String email, ResLoginDTO.UserLogin user) {
 
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessJwtExpiration, ChronoUnit.SECONDS);
@@ -55,7 +55,7 @@ public class SecurityUtil {
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
             .expiresAt(validity)
-            .subject(authentication.getName())
+            .subject(email)
             .claim("user", user)
             .build();
 
