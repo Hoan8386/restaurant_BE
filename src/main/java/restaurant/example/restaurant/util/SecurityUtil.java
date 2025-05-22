@@ -26,7 +26,8 @@ import org.springframework.stereotype.Service;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
 
-import restaurant.example.restaurant.domain.DTO.ResLoginDTO;
+import restaurant.example.restaurant.domain.response.ResLoginDTO;
+import restaurant.example.restaurant.domain.response.ResLoginDTO.UserLogin;
 
 @Service
 public class SecurityUtil {
@@ -46,7 +47,7 @@ public class SecurityUtil {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String createAccessToken(String email, ResLoginDTO.UserLogin user) {
+    public String createAccessToken(String email, UserLogin user) {
 
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessJwtExpiration, ChronoUnit.SECONDS);

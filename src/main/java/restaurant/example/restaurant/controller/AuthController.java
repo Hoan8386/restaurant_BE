@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.Cookie;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.DTO.LoginDTO;
-import restaurant.example.restaurant.domain.DTO.ResLoginDTO;
+import restaurant.example.restaurant.domain.response.ResLoginDTO;
+import restaurant.example.restaurant.domain.response.ResLoginDTO.UserLogin;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.SecurityUtil;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
@@ -59,7 +60,7 @@ public class AuthController {
         User currentUserBD = this.userService.handelGetUserByUsername(loginDTO.getUsername());
 
         if (currentUserBD != null) {
-            ResLoginDTO.UserLogin user = res.new UserLogin();
+            ResLoginDTO.UserLogin user = new UserLogin();
             user.setEmail(currentUserBD.getEmail());
             user.setId(currentUserBD.getId());
             user.setName(currentUserBD.getUsername());
@@ -91,7 +92,7 @@ public class AuthController {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUserBD = this.userService.handelGetUserByUsername(email);
 
-        ResLoginDTO.UserLogin user = new ResLoginDTO().new UserLogin();
+        ResLoginDTO.UserLogin user = new UserLogin();
         if (currentUserBD != null) {
             user.setEmail(currentUserBD.getEmail());
             user.setId(currentUserBD.getId());
@@ -122,7 +123,7 @@ public class AuthController {
         User currentUserBD = this.userService.handelGetUserByUsername(email);
 
         if (currentUserBD != null) {
-            ResLoginDTO.UserLogin user = res.new UserLogin();
+            ResLoginDTO.UserLogin user = new UserLogin();
             user.setEmail(currentUserBD.getEmail());
             user.setId(currentUserBD.getId());
             user.setName(currentUserBD.getUsername());
