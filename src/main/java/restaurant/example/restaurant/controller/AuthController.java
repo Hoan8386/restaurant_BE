@@ -67,6 +67,8 @@ public class AuthController {
             res.setUser(user);
         }
 
+        System.out.println("check" + authentication.getName() + res.getUser());
+
         String access_token = this.securityUtil.createAccessToken(authentication.getName(), res.getUser());
         res.setAccessToken(access_token);
 
