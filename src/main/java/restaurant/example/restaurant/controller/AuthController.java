@@ -11,11 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.Cookie;
 import restaurant.example.restaurant.domain.User;
-import restaurant.example.restaurant.domain.DTO.LoginDTO;
 import restaurant.example.restaurant.domain.response.ResLoginDTO;
-import restaurant.example.restaurant.domain.response.ResLoginDTO.UserLogin;
+import restaurant.example.restaurant.domain.request.ReqLoginDTO;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.SecurityUtil;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
@@ -44,7 +42,7 @@ public class AuthController {
     }
 
     @PostMapping("auth/login")
-    public ResponseEntity<ResLoginDTO> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ResLoginDTO> login(@RequestBody ReqLoginDTO loginDTO) {
         // Nạp input gồm username/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());
@@ -60,7 +58,8 @@ public class AuthController {
         User currentUserBD = this.userService.handelGetUserByUsername(loginDTO.getUsername());
 
         if (currentUserBD != null) {
-            ResLoginDTO.UserLogin user = new UserLogin();
+
+            ResLoginDTO.UserLogin user = new ResLoginDTO.UserLogin();
             user.setEmail(currentUserBD.getEmail());
             user.setId(currentUserBD.getId());
             user.setName(currentUserBD.getUsername());
@@ -90,18 +89,21 @@ public class AuthController {
 
     @GetMapping("auth/account")
     @ApiMessage("fetch account")
-    public ResponseEntity<ResLoginDTO.UserLogin> getAccount() {
+    public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
-        User currentUserBD = this.userService.handelGetUserByUsername(email);
+        User currentUserDB = this.userService.handelGetUserByUsername(email);
 
-        ResLoginDTO.UserLogin user = new UserLogin();
-        if (currentUserBD != null) {
-            user.setEmail(currentUserBD.getEmail());
-            user.setId(currentUserBD.getId());
-            user.setName(currentUserBD.getUsername());
+        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+        ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
+        if (currentUserDB != null) {
+            userLogin.setId(currentUserDB.getId());
+            userLogin.setEmail(currentUserDB.getEmail());
+            userLogin.setName(currentUserDB.getUsername());
+            userLogin.setRole(currentUserDB.getRole());
+            userGetAccount.setUser(userLogin);
         }
 
-        return ResponseEntity.ok().body(user);
+        return ResponseEntity.ok().body(userGetAccount);
     }
 
     @GetMapping("/auth/refresh")
@@ -122,14 +124,15 @@ public class AuthController {
             throw new IdInvalidException("refresh token không hợp lệ");
         }
         ResLoginDTO res = new ResLoginDTO();
-        User currentUserBD = this.userService.handelGetUserByUsername(email);
+        User currentUserDB = this.userService.handelGetUserByUsername(email);
 
-        if (currentUserBD != null) {
-            ResLoginDTO.UserLogin user = new UserLogin();
-            user.setEmail(currentUserBD.getEmail());
-            user.setId(currentUserBD.getId());
-            user.setName(currentUserBD.getUsername());
-            res.setUser(user);
+        if (currentUserDB != null) {
+            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                    currentUserDB.getId(),
+                    currentUserDB.getEmail(),
+                    currentUserDB.getUsername(),
+                    currentUserDB.getRole());
+            res.setUser(userLogin);
         }
 
         String access_token = this.securityUtil.createAccessToken(email, res.getUser());

@@ -6,7 +6,7 @@ import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
 import restaurant.example.restaurant.domain.Dish;
-import restaurant.example.restaurant.domain.DTO.ResultPaginationDataDTO;
+import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
 import restaurant.example.restaurant.service.DishService;
 
 import java.util.List;

@@ -6,10 +6,10 @@ import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
 import restaurant.example.restaurant.domain.User;
-import restaurant.example.restaurant.domain.DTO.ResultPaginationDataDTO;
 import restaurant.example.restaurant.domain.response.ResCreateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUpdateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUserDTO;
+import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
 import restaurant.example.restaurant.util.error.IdInvalidException;

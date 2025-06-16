@@ -1,6 +1,6 @@
-package restaurant.example.restaurant.domain.DTO;
+package restaurant.example.restaurant.domain.request;
 
-public class LoginDTO {
+public class ReqLoginDTO {
     private String username;
     private String password;
 
