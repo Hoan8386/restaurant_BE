@@ -1,4 +1,4 @@
-package restaurant.example.restaurant.service;
+package restaurant.example.restaurant.config;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import restaurant.example.restaurant.domain.User;
+import restaurant.example.restaurant.service.UserService;
 
 @Component("userDetailsService")
 public class UserDetailCustom implements UserDetailsService {

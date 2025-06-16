@@ -10,8 +10,7 @@ import org.springframework.stereotype.Service;
 
 import restaurant.example.restaurant.domain.Dish;
 import restaurant.example.restaurant.domain.User;
-import restaurant.example.restaurant.domain.DTO.Meta;
-import restaurant.example.restaurant.domain.DTO.ResultPaginationDataDTO;
+import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
 import restaurant.example.restaurant.repository.DishRepository;
 
 @Service
@@ -33,7 +32,7 @@ public class DishService {
     public ResultPaginationDataDTO handleGetAllDish(Specification<Dish> spec, Pageable pageable) {
         Page<Dish> pageUser = this.dishRepository.findAll(spec, pageable);
         ResultPaginationDataDTO rs = new ResultPaginationDataDTO();
-        Meta meta = new Meta();
+        ResultPaginationDataDTO.Meta meta = new ResultPaginationDataDTO.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
         meta.setPageSize(pageable.getPageSize());
 

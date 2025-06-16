@@ -9,11 +9,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import restaurant.example.restaurant.domain.User;
-import restaurant.example.restaurant.domain.DTO.Meta;
-import restaurant.example.restaurant.domain.DTO.ResultPaginationDataDTO;
 import restaurant.example.restaurant.domain.response.ResCreateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUpdateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUserDTO;
+import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
 import restaurant.example.restaurant.repository.UserRepository;
 import org.springframework.data.domain.Page;
 
@@ -49,7 +48,7 @@ public class UserService {
 
         Page<User> pageUser = this.userRepository.findAll(spec, pageable);
         ResultPaginationDataDTO rs = new ResultPaginationDataDTO();
-        Meta mt = new Meta();
+        ResultPaginationDataDTO.Meta mt = new ResultPaginationDataDTO.Meta();
 
         mt.setPage(pageable.getPageNumber() + 1);
         mt.setPageSize(pageable.getPageSize());
