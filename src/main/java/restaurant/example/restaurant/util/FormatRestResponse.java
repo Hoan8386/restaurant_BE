@@ -1,6 +1,7 @@
 package restaurant.example.restaurant.util;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
@@ -37,7 +38,7 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
         res.setStatusCode(status);
 
         //
-        if (body instanceof String) {
+        if (body instanceof String || body instanceof Resource) {
             return body;
         }
 

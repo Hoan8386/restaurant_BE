@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import restaurant.example.restaurant.domain.Role;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.response.ResCreateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUpdateUserDTO;
@@ -19,12 +20,18 @@ import org.springframework.data.domain.Page;
 @Service
 public class UserService {
     UserRepository userRepository;
+    private final RoleService roleService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoleService roleService) {
         this.userRepository = userRepository;
+        this.roleService = roleService;
     }
 
     public User CreateUser(User newUser) {
+        if (newUser.getRole() != null) {
+            Role r = this.roleService.fetchById(newUser.getRole().getId());
+            newUser.setRole(r != null ? r : null);
+        }
         return this.userRepository.save(newUser);
     }
 
