@@ -2,6 +2,7 @@ package restaurant.example.restaurant.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +12,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import restaurant.example.restaurant.config.JwtConfiguration;
 import restaurant.example.restaurant.domain.User;
+import restaurant.example.restaurant.domain.response.ResCreateUserDTO;
 import restaurant.example.restaurant.domain.response.ResLoginDTO;
 import restaurant.example.restaurant.domain.request.ReqLoginDTO;
 import restaurant.example.restaurant.service.UserService;
@@ -30,15 +34,16 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
     private final UserService userService;
-
+    private final JwtConfiguration jwtConfiguration;
     @Value("${restaurant.jwt.refresh-token-validity-in-seconds}")
     private long refreshJwtExpiration;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
-            SecurityUtil securityUtil, UserService userService) {
+            SecurityUtil securityUtil, UserService userService, JwtConfiguration jwtConfiguration) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
+        this.jwtConfiguration = jwtConfiguration;
     }
 
     @PostMapping("auth/login")
@@ -174,4 +179,5 @@ public class AuthController {
                 .body(null);
 
     }
+
 }

@@ -33,7 +33,7 @@ public class SecurityConfiguration {
                                                 authz -> authz
                                                                 .requestMatchers("/", "auth/login", "auth/refresh",
                                                                                 "localhost:8080/login",
-                                                                                "/storage/**")
+                                                                                "/storage/**", "auth/register")
                                                                 .permitAll()
                                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

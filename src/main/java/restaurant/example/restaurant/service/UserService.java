@@ -130,4 +130,7 @@ public class UserService {
         return this.getUserByRefreshTokenAndEmail(token, email);
     }
 
+    public boolean isEmailExist(String email) {
+        return this.userRepository.existsByEmail(email);
+    }
 }

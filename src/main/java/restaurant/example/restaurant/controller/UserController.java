@@ -106,4 +106,19 @@ public class UserController {
         return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(user));
     }
 
+    @PostMapping("/auth/register")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody User postManUser)
+            throws IdInvalidException {
+        boolean isEmailExist = this.userService.isEmailExist(postManUser.getEmail());
+        if (isEmailExist) {
+            throw new IdInvalidException(
+                    "Email " + postManUser.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+        }
+        String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        User ericUser = this.userService.CreateUser(postManUser);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(this.userService.convertToResCreateUserDTO(ericUser));
+    }
 }
