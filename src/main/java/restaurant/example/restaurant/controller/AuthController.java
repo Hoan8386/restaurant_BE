@@ -68,6 +68,7 @@ public class AuthController {
             user.setEmail(currentUserBD.getEmail());
             user.setId(currentUserBD.getId());
             user.setName(currentUserBD.getUsername());
+            user.setRole(currentUserBD.getRole());
             res.setUser(user);
         }
 

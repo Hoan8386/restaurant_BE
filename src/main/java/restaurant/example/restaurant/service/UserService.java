@@ -133,4 +133,8 @@ public class UserService {
     public boolean isEmailExist(String email) {
         return this.userRepository.existsByEmail(email);
     }
+
+    public User handleGetUserByUsername(String name) {
+        return this.userRepository.findByEmail(name);
+    }
 }
