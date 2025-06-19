@@ -8,21 +8,37 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import restaurant.example.restaurant.domain.Category;
 import restaurant.example.restaurant.domain.Dish;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
+import restaurant.example.restaurant.repository.CategoryRepository;
 import restaurant.example.restaurant.repository.DishRepository;
 
 @Service
 public class DishService {
     private final DishRepository dishRepository;
+    private final CategoryRepository categoryRepository;
 
-    public DishService(DishRepository dishRepository) {
+    public DishService(DishRepository dishRepository, CategoryRepository categoryRepository) {
         this.dishRepository = dishRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public Dish handleCreatedDish(Dish dish) {
-        return this.dishRepository.save(dish);
+        if (dish.getCategory() != null && dish.getCategory().getId() != null) {
+            // Lấy Category từ DB theo ID
+            Category category = categoryRepository.findById(dish.getCategory().getId())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Không tìm thấy category với id = " + dish.getCategory().getId()));
+
+            // Gán lại Category đã load đầy đủ vào dish
+            dish.setCategory(category);
+        } else {
+            throw new RuntimeException("Category không hợp lệ");
+        }
+
+        return dishRepository.save(dish);
     }
 
     public Optional<Dish> handleGetDishById(Long id) {

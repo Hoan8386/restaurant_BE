@@ -58,6 +58,7 @@ public class User {
     private List<Order> orders;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private Cart cart;
 
     @PrePersist

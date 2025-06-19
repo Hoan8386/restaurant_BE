@@ -26,7 +26,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
             HttpServletRequest request,
             HttpServletResponse response, Object handler)
             throws Exception {
-        String path = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        String path = request.getRequestURI();
         String requestURI = request.getRequestURI();
         String httpMethod = request.getMethod();
         System.out.println(">>> RUN preHandle");
@@ -44,6 +44,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
                 Role role = user.getRole();
                 if (role != null) {
                     List<Permission> permissions = role.getPermissions();
+                    System.out.println(">>> User's permissions:");
+                    permissions.forEach(p -> {
+                        System.out.println(p.getMethod() + " " + p.getApiPath());
+                    });
+
                     boolean isAllow = permissions.stream()
                             .anyMatch(item -> item.getApiPath().equals(path) && item.getMethod().equals(httpMethod));
                     if (isAllow == false) {

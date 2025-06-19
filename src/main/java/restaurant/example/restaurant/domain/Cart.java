@@ -27,6 +27,7 @@ public class Cart {
     // user_id
     @OneToOne()
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     // cart_detail_id

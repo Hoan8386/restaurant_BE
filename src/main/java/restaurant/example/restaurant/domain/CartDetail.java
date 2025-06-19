@@ -27,6 +27,7 @@ public class CartDetail {
 
     private double price;
 
+    private double total;
     // cart_id: long
     @ManyToOne
     @JoinColumn(name = "cart_id")
