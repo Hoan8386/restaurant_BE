@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import restaurant.example.restaurant.controller.CartController;
 import restaurant.example.restaurant.domain.Cart;
 import restaurant.example.restaurant.domain.CartDetail;
+import restaurant.example.restaurant.domain.Dish;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.repository.CartDetailRepository;
 import restaurant.example.restaurant.repository.CartRepository;
+import restaurant.example.restaurant.repository.DishRepository;
 import restaurant.example.restaurant.repository.UserRepository;
 
 @Service
@@ -19,13 +21,15 @@ public class CartService {
     private final UserRepository userRepository;
     public final CartRepository cartRepository;
     public final CartDetailRepository cartDetailRepository;
+    public final DishRepository dishRepository;
 
     public CartService(CartRepository cartRepository, UserService userService, UserRepository userRepository,
-            CartDetailRepository cartDetailRepository) {
+            CartDetailRepository cartDetailRepository, DishRepository dishRepository) {
         this.cartRepository = cartRepository;
         this.userService = userService;
         this.userRepository = userRepository;
         this.cartDetailRepository = cartDetailRepository;
+        this.dishRepository = dishRepository;
     }
 
     public Cart getCartById(Long id) {
@@ -44,36 +48,38 @@ public class CartService {
     }
 
     public CartDetail addToCart(CartDetail request, String email) {
-        // 1. Tìm User theo email
+        // 1. Tìm user
         User user = this.userRepository.findByEmail(email);
 
-        // 2. Tìm hoặc tạo Cart của user
+        // 2. Tìm hoặc tạo cart
         Cart cart = cartRepository.findByUserId(user.getId()).orElseGet(() -> {
             Cart newCart = new Cart();
             newCart.setUser(user);
             return cartRepository.save(newCart);
         });
 
-        // 3. Lấy đơn giá món ăn
-        double unitPrice = request.getDish().getPrice();
+        // ⚠️ 3. Lấy Dish từ database theo ID
+        Long dishId = request.getDish().getId();
+        Dish dish = this.dishRepository.findById(dishId)
+                .orElseThrow(() -> new RuntimeException("Dish not found with id: " + dishId));
 
-        // 4. Kiểm tra xem món đã tồn tại trong cart chưa
+        double unitPrice = dish.getPrice();
+
+        // 4. Kiểm tra món đã có trong giỏ chưa
         Optional<CartDetail> existingDetailOpt = cartDetailRepository
-                .findByCartIdAndDishId(cart.getId(), request.getDish().getId());
+                .findByCartIdAndDishId(cart.getId(), dishId);
 
         CartDetail detail;
         if (existingDetailOpt.isPresent()) {
-            // Đã có món, cộng dồn số lượng
             detail = existingDetailOpt.get();
             long newQuantity = detail.getQuantity() + request.getQuantity();
             detail.setQuantity(newQuantity);
             detail.setPrice(unitPrice);
             detail.setTotal(unitPrice * newQuantity);
         } else {
-            // Món mới
             detail = new CartDetail();
             detail.setCart(cart);
-            detail.setDish(request.getDish());
+            detail.setDish(dish); // gán dish đã load đầy đủ
             detail.setQuantity(request.getQuantity());
             detail.setPrice(unitPrice);
             detail.setTotal(unitPrice * request.getQuantity());

@@ -43,61 +43,63 @@ public class DatabaseInitializer implements CommandLineRunner {
         long countUsers = this.userRepository.count();
 
         if (countPermissions == 0) {
-            ArrayList<Permission> arr = new ArrayList<>();
+            List<Permission> permissions = new ArrayList<>();
+
             // CATEGORY
-            arr.add(new Permission("Create a category", "/category", "POST", "CATEGORY"));
-            arr.add(new Permission("Update a category", "/category", "PUT", "CATEGORY"));
-            arr.add(new Permission("Delete a category", "/category/{id}", "DELETE", "CATEGORY"));
-            arr.add(new Permission("Get a category by id", "/category/{id}", "GET", "CATEGORY"));
-            arr.add(new Permission("Get category with pagination", "/category", "GET", "CATEGORY"));
+            permissions.add(new Permission("Create a category", "/category", "POST", "CATEGORY"));
+            permissions.add(new Permission("Update a category", "/category", "PUT", "CATEGORY"));
+            permissions.add(new Permission("Delete a category", "/category/{id}", "DELETE", "CATEGORY"));
+            permissions.add(new Permission("Get a category by id", "/category/{id}", "GET", "CATEGORY"));
+            permissions.add(new Permission("Get category with pagination", "/category", "GET", "CATEGORY"));
 
             // DISH
-            arr.add(new Permission("Create a dish", "/dish", "POST", "DISH"));
-            arr.add(new Permission("Update a dish", "/dish", "PUT", "DISH"));
-            arr.add(new Permission("Delete a dish", "/dish/{id}", "DELETE", "DISH"));
-            arr.add(new Permission("Get a dish by id", "/dish/{id}", "GET", "DISH"));
-            arr.add(new Permission("Get dish with pagination", "/dish", "GET", "DISH"));
+            permissions.add(new Permission("Create a dish", "/dish", "POST", "DISH"));
+            permissions.add(new Permission("Update a dish", "/dish", "PUT", "DISH"));
+            permissions.add(new Permission("Delete a dish", "/dish/{id}", "DELETE", "DISH"));
+            permissions.add(new Permission("Get a dish by id", "/dish/{id}", "GET", "DISH"));
+            permissions.add(new Permission("Get dish with pagination", "/dish", "GET", "DISH"));
 
             // PERMISSIONS
-            arr.add(new Permission("Create a permission", "/permissions", "POST", "PERMISSIONS"));
-            arr.add(new Permission("Update a permission", "/permissions", "PUT", "PERMISSIONS"));
-            arr.add(new Permission("Delete a permission", "/permissions/{id}", "DELETE", "PERMISSIONS"));
-            arr.add(new Permission("Get a permission by id", "/permissions/{id}", "GET", "PERMISSIONS"));
-            arr.add(new Permission("Get permissions with pagination", "/permissions", "GET", "PERMISSIONS"));
+            permissions.add(new Permission("Create a permission", "/permissions", "POST", "PERMISSIONS"));
+            permissions.add(new Permission("Update a permission", "/permissions", "PUT", "PERMISSIONS"));
+            permissions.add(new Permission("Delete a permission", "/permissions/{id}", "DELETE", "PERMISSIONS"));
+            permissions.add(new Permission("Get a permission by id", "/permissions/{id}", "GET", "PERMISSIONS"));
+            permissions.add(new Permission("Get permissions with pagination", "/permissions", "GET", "PERMISSIONS"));
 
             // ROLES
-            arr.add(new Permission("Create a role", "/roles", "POST", "ROLES"));
-            arr.add(new Permission("Update a role", "/roles", "PUT", "ROLES"));
-            arr.add(new Permission("Delete a role", "/roles/{id}", "DELETE", "ROLES"));
-            arr.add(new Permission("Get a role by id", "/roles/{id}", "GET", "ROLES"));
-            arr.add(new Permission("Get roles with pagination", "/roles", "GET", "ROLES"));
+            permissions.add(new Permission("Create a role", "/roles", "POST", "ROLES"));
+            permissions.add(new Permission("Update a role", "/roles", "PUT", "ROLES"));
+            permissions.add(new Permission("Delete a role", "/roles/{id}", "DELETE", "ROLES"));
+            permissions.add(new Permission("Get a role by id", "/roles/{id}", "GET", "ROLES"));
+            permissions.add(new Permission("Get roles with pagination", "/roles", "GET", "ROLES"));
 
             // USERS
-            arr.add(new Permission("Create a user", "/users", "POST", "USERS"));
-            arr.add(new Permission("Update a user", "/users", "PUT", "USERS"));
-            arr.add(new Permission("Delete a user", "/users/{id}", "DELETE", "USERS"));
-            arr.add(new Permission("Get a user by id", "/users/{id}", "GET", "USERS"));
-            arr.add(new Permission("Get users with pagination", "/users", "GET", "USERS"));
+            permissions.add(new Permission("Create a user", "/users", "POST", "USERS"));
+            permissions.add(new Permission("Update a user", "/users", "PUT", "USERS"));
+            permissions.add(new Permission("Delete a user", "/users/{id}", "DELETE", "USERS"));
+            permissions.add(new Permission("Get a user by id", "/users/{id}", "GET", "USERS"));
+            permissions.add(new Permission("Get users with pagination", "/users", "GET", "USERS"));
 
-            // CART
-            arr.add(new Permission("Get cart user", "/cart", "GET", "CART"));
-            arr.add(new Permission("Delete cart user", "/cart", "DELETE", "CART"));
-            arr.add(new Permission("Add dish to cart", "/cart/add-dish", "POST", "CART_ITEM"));
-            arr.add(new Permission("Get all dishes in cart", "/cart/get-all-dish", "GET", "CART_ITEM"));
-            arr.add(new Permission("Update dish quantity in cart", "/cart/update/{cartItemId}", "PUT", "CART_ITEM"));
-            arr.add(new Permission("Delete dish from cart", "/cart/delete/{cartItemId}", "DELETE", "CART_ITEM"));
+            // CART - chú ý sửa đường dẫn theo base path /cart
+            permissions.add(new Permission("Get cart user", "/cart", "GET", "CART"));
+            permissions.add(new Permission("Delete cart user", "/cart", "DELETE", "CART"));
+            permissions.add(new Permission("Add dish to cart", "/cart/add-dish", "POST", "CART_ITEM"));
+            permissions.add(new Permission("Get all dishes in cart", "/cart/get-all-dish", "GET", "CART_ITEM"));
+            permissions.add(new Permission("Update dish quantity in cart", "/cart/update-dish", "PUT", "CART_ITEM"));
+            permissions.add(new Permission("Delete dish from cart", "/cart/delete-dish/{id}", "DELETE", "CART_ITEM"));
 
             // FILES
-            arr.add(new Permission("Download a file", "/files", "POST", "FILES"));
-            arr.add(new Permission("Upload a file", "/files", "GET", "FILES"));
+            permissions.add(new Permission("Download a file", "/files", "POST", "FILES"));
+            permissions.add(new Permission("Upload a file", "/files", "GET", "FILES"));
 
-            // ORDER
-            arr.add(new Permission("Create order", "/orders/order", "POST", "ORDER"));
-            arr.add(new Permission("Get orders of current user", "/orders/list-order", "GET", "ORDER"));
-            arr.add(new Permission("Get all orders", "/orders/get-all-order", "GET", "ORDER"));
-            arr.add(new Permission("Get order by id", "/orders/order/{id}", "GET", "ORDER"));
+            // ORDER - sửa đường dẫn cho phù hợp controller
+            permissions.add(new Permission("Create order", "/order", "POST", "ORDER"));
+            permissions.add(new Permission("Get orders of current user", "/list-order", "GET", "ORDER"));
+            permissions.add(new Permission("Get all orders", "/get-all-order", "GET", "ORDER"));
+            permissions.add(new Permission("Get order by id", "/order/{id}", "GET", "ORDER"));
+            permissions.add(new Permission("Update order status", "/order/status/{id}", "PUT", "ORDER"));
 
-            this.permissionRepository.saveAll(arr);
+            this.permissionRepository.saveAll(permissions);
         }
 
         if (countRoles == 0) {
@@ -112,8 +114,9 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             // USER: chỉ mua hàng, xem đơn hàng của mình, thao tác giỏ hàng
             List<Permission> userPermissions = allPermissions.stream()
-                    .filter(p -> (p.getApiPath().equals("/orders/order") && p.getMethod().equals("POST"))
-                            || (p.getApiPath().equals("/orders/list-order") && p.getMethod().equals("GET"))
+                    // sửa filter đường dẫn order và cart đúng với controller
+                    .filter(p -> (p.getApiPath().equals("/order") && p.getMethod().equals("POST"))
+                            || (p.getApiPath().equals("/list-order") && p.getMethod().equals("GET"))
                             || p.getApiPath().startsWith("/cart"))
                     .toList();
 
@@ -123,10 +126,11 @@ public class DatabaseInitializer implements CommandLineRunner {
             userRole.setPermissions(userPermissions);
             this.roleRepository.save(userRole);
 
-            // STAFF: xem tất cả đơn hàng, xem chi tiết
+            // STAFF: xem tất cả đơn hàng, xem chi tiết, cập nhật trạng thái đơn hàng
             List<Permission> staffPermissions = allPermissions.stream()
-                    .filter(p -> (p.getApiPath().equals("/orders/get-all-order") && p.getMethod().equals("GET"))
-                            || (p.getApiPath().startsWith("/orders/order/") && p.getMethod().equals("GET")))
+                    .filter(p -> (p.getApiPath().equals("/get-all-order") && p.getMethod().equals("GET")) ||
+                            (p.getApiPath().startsWith("/order/") && p.getMethod().equals("GET")) ||
+                            (p.getApiPath().equals("/order/status/{id}") && p.getMethod().equals("PUT")))
                     .toList();
 
             Role staffRole = new Role();

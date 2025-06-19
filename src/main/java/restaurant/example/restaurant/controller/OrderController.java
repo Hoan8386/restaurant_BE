@@ -11,7 +11,6 @@ import restaurant.example.restaurant.domain.Order;
 import restaurant.example.restaurant.service.OrderService;
 
 @RestController
-@RequestMapping("/orders")
 public class OrderController {
 
     private final OrderService orderService;
@@ -32,6 +31,15 @@ public class OrderController {
     @GetMapping("/get-all-order")
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    /** Cập nhật trạng thái đơn hàng */
+    @PutMapping("/order/status/{id}")
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestParam("status") String status) {
+        Order updatedOrder = orderService.updateOrderStatus(id, status);
+        return ResponseEntity.ok(updatedOrder);
     }
 
     /** Người dùng xem đơn hàng của họ */

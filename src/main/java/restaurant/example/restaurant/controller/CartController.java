@@ -2,32 +2,22 @@ package restaurant.example.restaurant.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import restaurant.example.restaurant.domain.Cart;
 import restaurant.example.restaurant.domain.CartDetail;
 import restaurant.example.restaurant.domain.User;
+import restaurant.example.restaurant.domain.request.CartItemUpdate;
 import restaurant.example.restaurant.domain.response.ResCartDTO;
 import restaurant.example.restaurant.service.CartDetailService;
 import restaurant.example.restaurant.service.CartService;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
 
-import org.springframework.security.core.Authentication;
-
 @RestController
+@RequestMapping("/cart") // Base path cho tất cả API giỏ hàng
 public class CartController {
 
     private final UserService userService;
@@ -41,7 +31,7 @@ public class CartController {
     }
 
     /** Lấy giỏ hàng của người dùng hiện tại */
-    @GetMapping("/cart")
+    @GetMapping
     @ApiMessage("Get cart")
     public ResponseEntity<ResCartDTO> getCart() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -49,33 +39,65 @@ public class CartController {
         Cart cart = cartService.getCartById(currentUser.getId());
         ResCartDTO resCartDTO = new ResCartDTO();
         resCartDTO.setTotalItems(cart.getCartDetails().size());
-        List<CartDetail> lstCart = cart.getCartDetails();
-        double totalPrice = 0;
-        for (CartDetail cartDetail : lstCart) {
-            totalPrice += cartDetail.getTotal();
-        }
+        double totalPrice = cart.getCartDetails().stream()
+                .mapToDouble(CartDetail::getTotal)
+                .sum();
         resCartDTO.setId(cart.getId());
         resCartDTO.setTotalPrice(totalPrice);
         return ResponseEntity.ok(resCartDTO);
     }
 
-    @DeleteMapping("/cart")
+    /** Xóa toàn bộ giỏ hàng */
+    @DeleteMapping
     @ApiMessage("Delete cart")
     public ResponseEntity<ResCartDTO> clearCart() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userService.handelGetUserByUsername(username);
         Cart cart = cartService.getCartById(currentUser.getId());
-        ResCartDTO resCartDTO = new ResCartDTO();
 
         List<CartDetail> lst = cart.getCartDetails();
         for (CartDetail cartDetail : lst) {
             this.cartDetailService.handleDeleteByID(cartDetail.getId());
         }
 
+        ResCartDTO resCartDTO = new ResCartDTO();
         resCartDTO.setTotalItems(0);
         resCartDTO.setTotalPrice(0);
         resCartDTO.setId(cart.getId());
         return ResponseEntity.ok(resCartDTO);
     }
 
+    /** Thêm món vào giỏ hàng */
+    @PostMapping("/add-dish")
+    @ApiMessage("add item in cart")
+    public ResponseEntity<CartDetail> addToCart(@RequestBody CartDetail request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        CartDetail item = cartService.addToCart(request, email);
+        return ResponseEntity.ok(item);
+    }
+
+    /** Lấy tất cả món trong giỏ hàng của user hiện tại */
+    @GetMapping("/get-all-dish")
+    @ApiMessage("get all item")
+    public ResponseEntity<List<CartDetail>> getCartItems() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<CartDetail> items = cartService.getCartItemsByUserEmail(email);
+        return ResponseEntity.ok(items);
+    }
+
+    /** Cập nhật số lượng món trong giỏ hàng */
+    @PutMapping("/update-dish")
+    @ApiMessage("update quantity")
+    public ResponseEntity<CartDetail> updateQuantity(@RequestBody CartItemUpdate dto) {
+        CartDetail updated = cartService.updateQuantity(dto.getId(), dto.getQuantity());
+        return ResponseEntity.ok(updated);
+    }
+
+    /** Xóa một món khỏi giỏ hàng */
+    @DeleteMapping("/delete-dish/{id}")
+    @ApiMessage("delete item")
+    public ResponseEntity<Void> deleteCartItem(@PathVariable("id") Long cartItemId) {
+        cartService.removeItem(cartItemId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -26,7 +26,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
             HttpServletRequest request,
             HttpServletResponse response, Object handler)
             throws Exception {
-        String path = request.getRequestURI();
+        String path = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         String requestURI = request.getRequestURI();
         String httpMethod = request.getMethod();
         System.out.println(">>> RUN preHandle");
