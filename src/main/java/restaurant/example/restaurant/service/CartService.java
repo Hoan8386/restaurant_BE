@@ -1,5 +1,6 @@
 package restaurant.example.restaurant.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +10,7 @@ import restaurant.example.restaurant.domain.Cart;
 import restaurant.example.restaurant.domain.CartDetail;
 import restaurant.example.restaurant.domain.Dish;
 import restaurant.example.restaurant.domain.User;
+import restaurant.example.restaurant.domain.response.ResCartItem;
 import restaurant.example.restaurant.repository.CartDetailRepository;
 import restaurant.example.restaurant.repository.CartRepository;
 import restaurant.example.restaurant.repository.DishRepository;
@@ -47,7 +49,7 @@ public class CartService {
         }
     }
 
-    public CartDetail addToCart(CartDetail request, String email) {
+    public ResCartItem addToCart(CartDetail request, String email) {
         // 1. Tìm user
         User user = this.userRepository.findByEmail(email);
 
@@ -84,11 +86,20 @@ public class CartService {
             detail.setPrice(unitPrice);
             detail.setTotal(unitPrice * request.getQuantity());
         }
+        cartDetailRepository.save(detail);
+        ResCartItem res = new ResCartItem();
+        res.setId(detail.getId());
+        res.setQuantity(detail.getQuantity());
+        res.setPrice(detail.getPrice());
+        res.setTotal(detail.getTotal());
+        res.setName(detail.getDish().getName());
+        res.setImageUrl(detail.getDish().getImageUrl());
+        res.setCategoryName(detail.getDish().getCategory().getName());
+        return res;
 
-        return cartDetailRepository.save(detail);
     }
 
-    public List<CartDetail> getCartItemsByUserEmail(String email) {
+    public List<ResCartItem> getCartItemsByUserEmail(String email) {
         // 1. Lấy user theo email
         User user = userRepository.findByEmail(email);
         if (user == null) {
@@ -102,11 +113,25 @@ public class CartService {
         }
 
         // 3. Lấy các CartDetail theo cartId
-        return cartDetailRepository.findAllByCartId(cartOpt.get().getId());
+        List<CartDetail> lst = cartDetailRepository.findAllByCartId(cartOpt.get().getId());
+        List<ResCartItem> lstRes = new ArrayList<>();
+        for (CartDetail item : lst) {
+            ResCartItem res = new ResCartItem();
+            res.setId(item.getId());
+            res.setQuantity(item.getQuantity());
+            res.setPrice(item.getPrice());
+            res.setTotal(item.getTotal());
+            res.setName(item.getDish().getName());
+            res.setImageUrl(item.getDish().getImageUrl());
+            res.setCategoryName(item.getDish().getCategory().getName());
+            lstRes.add(res);
+        }
+
+        return lstRes;
     }
 
     /** Cập nhật số lượng món trong giỏ hàng */
-    public CartDetail updateQuantity(Long cartItemId, long quantity) {
+    public ResCartItem updateQuantity(Long cartItemId, long quantity) {
         CartDetail detail = cartDetailRepository.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found with ID: " + cartItemId));
 
@@ -114,8 +139,16 @@ public class CartService {
 
         // Cập nhật lại total = price * quantity
         detail.setTotal(detail.getPrice() * quantity);
-
-        return cartDetailRepository.save(detail);
+        cartDetailRepository.save(detail);
+        ResCartItem res = new ResCartItem();
+        res.setId(detail.getId());
+        res.setQuantity(detail.getQuantity());
+        res.setPrice(detail.getPrice());
+        res.setTotal(detail.getTotal());
+        res.setName(detail.getDish().getName());
+        res.setImageUrl(detail.getDish().getImageUrl());
+        res.setCategoryName(detail.getDish().getCategory().getName());
+        return res;
     }
 
     /** Xóa một món khỏi giỏ hàng */
@@ -124,5 +157,9 @@ public class CartService {
             throw new RuntimeException("Cart item not found with ID: " + cartItemId);
         }
         cartDetailRepository.deleteById(cartItemId);
+    }
+
+    public void save(Cart cart) {
+        this.cartRepository.save(cart);
     }
 }

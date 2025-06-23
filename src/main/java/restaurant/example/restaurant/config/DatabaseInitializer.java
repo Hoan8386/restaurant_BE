@@ -87,18 +87,17 @@ public class DatabaseInitializer implements CommandLineRunner {
             permissions.add(new Permission("Get all dishes in cart", "/cart/get-all-dish", "GET", "CART_ITEM"));
             permissions.add(new Permission("Update dish quantity in cart", "/cart/update-dish", "PUT", "CART_ITEM"));
             permissions.add(new Permission("Delete dish from cart", "/cart/delete-dish/{id}", "DELETE", "CART_ITEM"));
-
+            permissions.add(new Permission("Check out cart", "/cart/checkout", "POST", "CART_ITEM"));
             // FILES
             permissions.add(new Permission("Download a file", "/files", "POST", "FILES"));
             permissions.add(new Permission("Upload a file", "/files", "GET", "FILES"));
 
             // ORDER - sửa đường dẫn cho phù hợp controller
-            permissions.add(new Permission("Create order", "/order", "POST", "ORDER"));
-            permissions.add(new Permission("Get orders of current user", "/list-order", "GET", "ORDER"));
-            permissions.add(new Permission("Get all orders", "/get-all-order", "GET", "ORDER"));
-            permissions.add(new Permission("Get order by id", "/order/{id}", "GET", "ORDER"));
-            permissions.add(new Permission("Update order status", "/order/status/{id}", "PUT", "ORDER"));
-
+            permissions.add(new Permission("Get orders of current user", "/orders/my", "GET", "ORDER"));
+            permissions.add(new Permission("Get all orders", "/orders/all", "GET", "ORDER"));
+            permissions.add(new Permission("Get order by id", "/orders/{id}", "GET", "ORDER"));
+            permissions.add(new Permission("Update order status", "/orders/status/{id}", "PUT", "ORDER"));
+            permissions.add(new Permission("Delete order", "/orders/{id}", "DELETE", "ORDER"));
             this.permissionRepository.saveAll(permissions);
         }
 
@@ -114,10 +113,9 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             // USER: chỉ mua hàng, xem đơn hàng của mình, thao tác giỏ hàng
             List<Permission> userPermissions = allPermissions.stream()
-                    // sửa filter đường dẫn order và cart đúng với controller
-                    .filter(p -> (p.getApiPath().equals("/order") && p.getMethod().equals("POST"))
-                            || (p.getApiPath().equals("/list-order") && p.getMethod().equals("GET"))
-                            || p.getApiPath().startsWith("/cart"))
+                    .filter(p -> (p.getApiPath().equals("/orders/my") && p.getMethod().equals("GET")) ||
+                            (p.getApiPath().equals("/orders/{id}") && p.getMethod().equals("GET")) ||
+                            (p.getApiPath().startsWith("/cart")))
                     .toList();
 
             Role userRole = new Role();
@@ -128,9 +126,9 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             // STAFF: xem tất cả đơn hàng, xem chi tiết, cập nhật trạng thái đơn hàng
             List<Permission> staffPermissions = allPermissions.stream()
-                    .filter(p -> (p.getApiPath().equals("/get-all-order") && p.getMethod().equals("GET")) ||
-                            (p.getApiPath().startsWith("/order/") && p.getMethod().equals("GET")) ||
-                            (p.getApiPath().equals("/order/status/{id}") && p.getMethod().equals("PUT")))
+                    .filter(p -> (p.getApiPath().equals("/orders/all") && p.getMethod().equals("GET")) ||
+                            (p.getApiPath().equals("/orders/{id}") && p.getMethod().equals("GET")) ||
+                            (p.getApiPath().equals("/orders/status/{id}") && p.getMethod().equals("PUT")))
                     .toList();
 
             Role staffRole = new Role();

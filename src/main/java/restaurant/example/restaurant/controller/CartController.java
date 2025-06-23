@@ -8,11 +8,16 @@ import org.springframework.web.bind.annotation.*;
 
 import restaurant.example.restaurant.domain.Cart;
 import restaurant.example.restaurant.domain.CartDetail;
+import restaurant.example.restaurant.domain.Order;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.request.CartItemUpdate;
+import restaurant.example.restaurant.domain.request.CheckoutRequest;
+import restaurant.example.restaurant.domain.response.ResCartItem;
+import restaurant.example.restaurant.domain.response.ResOrder;
 import restaurant.example.restaurant.domain.response.ResCartDTO;
 import restaurant.example.restaurant.service.CartDetailService;
 import restaurant.example.restaurant.service.CartService;
+import restaurant.example.restaurant.service.OrderService;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
 
@@ -23,11 +28,14 @@ public class CartController {
     private final UserService userService;
     private final CartService cartService;
     private final CartDetailService cartDetailService;
+    private final OrderService orderService;
 
-    public CartController(UserService userService, CartService cartService, CartDetailService cartDetailService) {
+    public CartController(UserService userService, CartService cartService, CartDetailService cartDetailService,
+            OrderService orderService) {
         this.userService = userService;
         this.cartService = cartService;
         this.cartDetailService = cartDetailService;
+        this.orderService = orderService;
     }
 
     /** Lấy giỏ hàng của người dùng hiện tại */
@@ -70,26 +78,26 @@ public class CartController {
     /** Thêm món vào giỏ hàng */
     @PostMapping("/add-dish")
     @ApiMessage("add item in cart")
-    public ResponseEntity<CartDetail> addToCart(@RequestBody CartDetail request) {
+    public ResponseEntity<ResCartItem> addToCart(@RequestBody CartDetail request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        CartDetail item = cartService.addToCart(request, email);
+        ResCartItem item = cartService.addToCart(request, email);
         return ResponseEntity.ok(item);
     }
 
     /** Lấy tất cả món trong giỏ hàng của user hiện tại */
     @GetMapping("/get-all-dish")
     @ApiMessage("get all item")
-    public ResponseEntity<List<CartDetail>> getCartItems() {
+    public ResponseEntity<List<ResCartItem>> getCartItems() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<CartDetail> items = cartService.getCartItemsByUserEmail(email);
-        return ResponseEntity.ok(items);
+        List<ResCartItem> lstRes = cartService.getCartItemsByUserEmail(email);
+        return ResponseEntity.ok(lstRes);
     }
 
     /** Cập nhật số lượng món trong giỏ hàng */
     @PutMapping("/update-dish")
     @ApiMessage("update quantity")
-    public ResponseEntity<CartDetail> updateQuantity(@RequestBody CartItemUpdate dto) {
-        CartDetail updated = cartService.updateQuantity(dto.getId(), dto.getQuantity());
+    public ResponseEntity<ResCartItem> updateQuantity(@RequestBody CartItemUpdate dto) {
+        ResCartItem updated = cartService.updateQuantity(dto.getId(), dto.getQuantity());
         return ResponseEntity.ok(updated);
     }
 
@@ -98,6 +106,35 @@ public class CartController {
     @ApiMessage("delete item")
     public ResponseEntity<Void> deleteCartItem(@PathVariable("id") Long cartItemId) {
         cartService.removeItem(cartItemId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(null);
     }
+
+    @PostMapping("/checkout")
+    @ApiMessage("Checkout cart")
+    public ResponseEntity<ResOrder> checkoutCart(@RequestBody CheckoutRequest request) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.handelGetUserByUsername(username);
+        Cart cart = cartService.getCartById(user.getId());
+
+        // Tạo order từ cart
+        Order order = orderService.createOrderFromCart(cart, request.getReceiverName(),
+                request.getReceiverPhone(), request.getReceiverAddress());
+
+        // Xóa cartDetail sau khi checkout
+        for (CartDetail detail : cart.getCartDetails()) {
+            cartDetailService.handleDeleteByID(detail.getId());
+        }
+
+        cart.setCheckedOut(true);
+        cartService.save(cart); // hoặc cartRepository.save(cart)
+        ResOrder res = new ResOrder();
+        res.setId(order.getId());
+        res.setReceiverAddress(order.getReceiverAddress());
+        res.setReceiverName(order.getReceiverName());
+        res.setReceiverPhone(order.getReceiverPhone());
+        res.setStatus(order.getStatus());
+        res.setTotalPrice(order.getTotalPrice());
+        return ResponseEntity.ok(res);
+    }
+
 }
