@@ -20,6 +20,7 @@ import restaurant.example.restaurant.service.CartService;
 import restaurant.example.restaurant.service.OrderService;
 import restaurant.example.restaurant.service.UserService;
 import restaurant.example.restaurant.util.anotation.ApiMessage;
+import restaurant.example.restaurant.util.error.CartException;
 
 @RestController
 @RequestMapping("/cart") // Base path cho tất cả API giỏ hàng
@@ -38,13 +39,21 @@ public class CartController {
         this.orderService = orderService;
     }
 
-    /** Lấy giỏ hàng của người dùng hiện tại */
+    /**
+     * Lấy giỏ hàng của người dùng hiện tại
+     * 
+     * 
+     */
     @GetMapping
     @ApiMessage("Get cart")
-    public ResponseEntity<ResCartDTO> getCart() {
+    public ResponseEntity<ResCartDTO> getCart() throws CartException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userService.handelGetUserByUsername(username);
+
         Cart cart = cartService.getCartById(currentUser.getId());
+        if (cart == null) {
+            throw new CartException("Not found cart");
+        }
         ResCartDTO resCartDTO = new ResCartDTO();
         resCartDTO.setTotalItems(cart.getCartDetails().size());
         double totalPrice = cart.getCartDetails().stream()
@@ -55,14 +64,20 @@ public class CartController {
         return ResponseEntity.ok(resCartDTO);
     }
 
-    /** Xóa toàn bộ giỏ hàng */
+    /**
+     * Xóa toàn bộ giỏ hàng
+     * 
+     * 
+     */
     @DeleteMapping
     @ApiMessage("Delete cart")
-    public ResponseEntity<ResCartDTO> clearCart() {
+    public ResponseEntity<ResCartDTO> clearCart() throws CartException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userService.handelGetUserByUsername(username);
         Cart cart = cartService.getCartById(currentUser.getId());
-
+        if (cart == null) {
+            throw new CartException("Not found cart");
+        }
         List<CartDetail> lst = cart.getCartDetails();
         for (CartDetail cartDetail : lst) {
             this.cartDetailService.handleDeleteByID(cartDetail.getId());
@@ -75,36 +90,61 @@ public class CartController {
         return ResponseEntity.ok(resCartDTO);
     }
 
-    /** Thêm món vào giỏ hàng */
+    /**
+     * Thêm món vào giỏ hàng
+     * 
+     * 
+     */
     @PostMapping("/add-dish")
     @ApiMessage("add item in cart")
-    public ResponseEntity<ResCartItem> addToCart(@RequestBody CartDetail request) {
+    public ResponseEntity<ResCartItem> addToCart(@RequestBody CartDetail request) throws CartException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         ResCartItem item = cartService.addToCart(request, email);
+        if (item == null) {
+            throw new CartException("error add item");
+        }
         return ResponseEntity.ok(item);
     }
 
-    /** Lấy tất cả món trong giỏ hàng của user hiện tại */
+    /**
+     * Lấy tất cả món trong giỏ hàng của user hiện tại
+     * 
+     * 
+     */
     @GetMapping("/get-all-dish")
     @ApiMessage("get all item")
-    public ResponseEntity<List<ResCartItem>> getCartItems() {
+    public ResponseEntity<List<ResCartItem>> getCartItems() throws CartException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         List<ResCartItem> lstRes = cartService.getCartItemsByUserEmail(email);
+        if (lstRes.isEmpty()) {
+            throw new CartException("Not item in my cart");
+        }
         return ResponseEntity.ok(lstRes);
     }
 
-    /** Cập nhật số lượng món trong giỏ hàng */
+    /**
+     * Cập nhật số lượng món trong giỏ hàng
+     * 
+     * 
+     */
     @PutMapping("/update-dish")
     @ApiMessage("update quantity")
-    public ResponseEntity<ResCartItem> updateQuantity(@RequestBody CartItemUpdate dto) {
+    public ResponseEntity<ResCartItem> updateQuantity(@RequestBody CartItemUpdate dto) throws CartException {
         ResCartItem updated = cartService.updateQuantity(dto.getId(), dto.getQuantity());
+        if (updated == null) {
+            throw new CartException("Update fall");
+        }
         return ResponseEntity.ok(updated);
     }
 
-    /** Xóa một món khỏi giỏ hàng */
+    /**
+     * Xóa một món khỏi giỏ hàng
+     * 
+     * 
+     */
     @DeleteMapping("/delete-dish/{id}")
     @ApiMessage("delete item")
-    public ResponseEntity<Void> deleteCartItem(@PathVariable("id") Long cartItemId) {
+    public ResponseEntity<Void> deleteCartItem(@PathVariable("id") Long cartItemId) throws CartException {
         cartService.removeItem(cartItemId);
         return ResponseEntity.ok(null);
     }

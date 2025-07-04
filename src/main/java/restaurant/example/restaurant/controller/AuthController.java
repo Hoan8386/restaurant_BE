@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,27 +28,32 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
+@RequestMapping("/api/v1")
 public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
     private final UserService userService;
     private final JwtConfiguration jwtConfiguration;
+    private final PasswordEncoder passwordEncoder;
     @Value("${restaurant.jwt.refresh-token-validity-in-seconds}")
     private long refreshJwtExpiration;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
-            SecurityUtil securityUtil, UserService userService, JwtConfiguration jwtConfiguration) {
+            SecurityUtil securityUtil, UserService userService, JwtConfiguration jwtConfiguration,
+            PasswordEncoder passwordEncoder) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
         this.jwtConfiguration = jwtConfiguration;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("auth/login")
-    public ResponseEntity<ResLoginDTO> login(@RequestBody ReqLoginDTO loginDTO) {
+    public ResponseEntity<ResLoginDTO> login(@RequestBody ReqLoginDTO loginDTO) throws IdInvalidException {
         // Nạp input gồm username/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());
@@ -71,7 +77,6 @@ public class AuthController {
             user.setRole(currentUserBD.getRole());
             res.setUser(user);
         }
-
         System.out.println("check" + authentication.getName() + res.getUser());
 
         String access_token = this.securityUtil.createAccessToken(authentication.getName(), res.getUser());
@@ -93,20 +98,39 @@ public class AuthController {
                 .body(res);
     }
 
+    @PostMapping("/auth/register")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody User postManUser)
+            throws IdInvalidException {
+        boolean isEmailExist = this.userService.isEmailExist(postManUser.getEmail());
+        if (isEmailExist) {
+            throw new IdInvalidException(
+                    "Email " + postManUser.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+        }
+        String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        User ericUser = this.userService.CreateUser(postManUser);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(this.userService.convertToResCreateUserDTO(ericUser));
+    }
+
     @GetMapping("auth/account")
     @ApiMessage("fetch account")
     public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUserDB = this.userService.handelGetUserByUsername(email);
 
-        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+        // ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
         ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
         if (currentUserDB != null) {
-            userLogin.setId(currentUserDB.getId());
-            userLogin.setEmail(currentUserDB.getEmail());
-            userLogin.setName(currentUserDB.getUsername());
-            userLogin.setRole(currentUserDB.getRole());
-            userGetAccount.setUser(userLogin);
+            userGetAccount.setId(currentUserDB.getId());
+            userGetAccount.setEmail(currentUserDB.getEmail());
+            userGetAccount.setUsername(currentUserDB.getUsername());
+            userGetAccount.setRole(currentUserDB.getRole().getName());
+            userGetAccount.setPhone(currentUserDB.getPhone());
+            userGetAccount.setGender(currentUserDB.getGender().name());
+            userGetAccount.setAddress(currentUserDB.getAddress());
+
         }
 
         return ResponseEntity.ok().body(userGetAccount);
@@ -161,7 +185,7 @@ public class AuthController {
                 .body(res);
     }
 
-    @GetMapping("/auth/logout")
+    @PostMapping("/auth/logout")
     @ApiMessage("Logout user ")
     public ResponseEntity<Void> logout() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";

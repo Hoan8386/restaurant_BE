@@ -15,6 +15,7 @@ import restaurant.example.restaurant.repository.CartDetailRepository;
 import restaurant.example.restaurant.repository.CartRepository;
 import restaurant.example.restaurant.repository.DishRepository;
 import restaurant.example.restaurant.repository.UserRepository;
+import restaurant.example.restaurant.util.error.CartException;
 
 @Service
 public class CartService {
@@ -151,10 +152,14 @@ public class CartService {
         return res;
     }
 
-    /** Xóa một món khỏi giỏ hàng */
-    public void removeItem(Long cartItemId) {
+    /**
+     * Xóa một món khỏi giỏ hàng
+     * 
+     * @throws CartException
+     */
+    public void removeItem(Long cartItemId) throws CartException {
         if (!cartDetailRepository.existsById(cartItemId)) {
-            throw new RuntimeException("Cart item not found with ID: " + cartItemId);
+            throw new CartException("Cart item not found with ID: " + cartItemId);
         }
         cartDetailRepository.deleteById(cartItemId);
     }

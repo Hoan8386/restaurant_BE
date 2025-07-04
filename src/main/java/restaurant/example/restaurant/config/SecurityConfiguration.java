@@ -31,9 +31,13 @@ public class SecurityConfiguration {
                                 .csrf(c -> c.disable())
                                 .authorizeHttpRequests(
                                                 authz -> authz
-                                                                .requestMatchers("/", "auth/login", "auth/refresh",
-                                                                                "localhost:8080/login",
-                                                                                "/storage/**", "auth/register")
+                                                                .requestMatchers(
+                                                                                "/",
+                                                                                "/api/v1/auth/login",
+                                                                                "/api/v1/auth/refresh",
+                                                                                "/api/v1/auth/logout",
+                                                                                "/storage/**",
+                                                                                "/api/v1/auth/register")
                                                                 .permitAll()
                                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

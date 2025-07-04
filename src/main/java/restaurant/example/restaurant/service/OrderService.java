@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import restaurant.example.restaurant.domain.*;
 import restaurant.example.restaurant.domain.response.ResOrder;
 import restaurant.example.restaurant.repository.*;
+import restaurant.example.restaurant.util.error.OrderException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -70,9 +72,12 @@ public class OrderService {
     }
 
     /** ✅ Lấy đơn hàng theo người dùng */
-    public List<ResOrder> getOrdersByUser(String email) {
+    public List<ResOrder> getOrdersByUser(String email) throws OrderException {
         User user = userRepository.findByEmail(email);
         List<Order> lst = orderRepository.findByUser(user);
+        if (lst.isEmpty()) {
+            throw new OrderException("Order is emty");
+        }
         List<ResOrder> lstRes = new ArrayList<>();
         for (Order item : lst) {
             ResOrder res = new ResOrder();
@@ -87,10 +92,17 @@ public class OrderService {
         return lstRes;
     }
 
-    /** ✅ Lấy đơn hàng theo ID */
-    public ResOrder getOrderById(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+    /**
+     * ✅ Lấy đơn hàng theo ID
+     **/
+    public ResOrder getOrderById(Long id) throws OrderException {
+        Optional<Order> item = orderRepository.findById(id);
+        Order order = new Order();
+        if (item.isPresent()) {
+            order = item.get();
+        } else {
+            throw new OrderException("Not found order");
+        }
         ResOrder res = new ResOrder();
         res.setId(order.getId());
         res.setReceiverAddress(order.getReceiverAddress());
@@ -101,10 +113,18 @@ public class OrderService {
         return res;
     }
 
-    /** ✅ Cập nhật trạng thái đơn hàng */
-    public ResOrder updateOrderStatus(Long id, String status) {
-        Order order = this.orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
-        ;
+    /**
+     * ✅ Cập nhật trạng thái đơn hàng
+     * 
+     * @throws OrderException
+     */
+    public ResOrder updateOrderStatus(Long id, String status) throws OrderException {
+        Optional<Order> item = this.orderRepository.findById(id);
+        if (!item.isPresent()) {
+            throw new OrderException("Not found order");
+        }
+        Order order = new Order();
+        order = item.get();
         order.setStatus(status);
         orderRepository.save(order);
         ResOrder res = new ResOrder();
@@ -117,10 +137,12 @@ public class OrderService {
         return res;
     }
 
-    /** ✅ Xóa đơn hàng */
-    public void deleteOrderById(Long id) {
+    /**
+     * ✅ Xóa đơn hàng
+     */
+    public void deleteOrderById(Long id) throws OrderException {
         if (!orderRepository.existsById(id)) {
-            throw new RuntimeException("Order not found");
+            throw new OrderException("Order not found");
         }
         orderRepository.deleteById(id);
     }

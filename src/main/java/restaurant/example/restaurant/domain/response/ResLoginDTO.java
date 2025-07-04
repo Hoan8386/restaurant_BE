@@ -2,11 +2,13 @@ package restaurant.example.restaurant.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import restaurant.example.restaurant.domain.Role;
+import restaurant.example.restaurant.util.constant.GenderEnum;
 
 @Getter
 @Setter
@@ -33,7 +35,13 @@ public class ResLoginDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserGetAccount {
-        private UserLogin user;
+        private Long id;
+        private String username;
+        private String email;
+        private String phone;
+        private String address;
+        private String gender;
+        private String role;
     }
 
     @Getter
