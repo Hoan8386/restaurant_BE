@@ -35,7 +35,7 @@ public class Cart {
     @JsonIgnore
     List<CartDetail> cartDetails;
 
-    private Boolean checkedOut = false;
+    // private Boolean checkedOut = false;
 
     private Instant createdAt;
     private Instant updatedAt;

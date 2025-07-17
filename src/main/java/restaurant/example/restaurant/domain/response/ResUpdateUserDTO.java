@@ -10,7 +10,7 @@ import restaurant.example.restaurant.util.constant.GenderEnum;
 @Setter
 public class ResUpdateUserDTO {
     private long id;
-    private String name;
+    private String username;
     private GenderEnum gender;
     private String address;
     private String phone;

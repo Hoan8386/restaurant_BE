@@ -27,12 +27,14 @@ public class OrderService {
     }
 
     /** ✅ Tạo đơn hàng từ giỏ hàng */
-    public Order createOrderFromCart(Cart cart, String receiverName, String receiverPhone, String receiverAddress) {
+    public Order createOrderFromCart(Cart cart, String receiverName, String receiverPhone, String receiverAddress,
+            String receiverEmail) {
         Order order = new Order();
         order.setUser(cart.getUser());
         order.setReceiverName(receiverName);
         order.setReceiverPhone(receiverPhone);
         order.setReceiverAddress(receiverAddress);
+        order.setReceiverEmail(receiverEmail);
         order.setStatus("PENDING");
 
         double total = 0;
@@ -57,6 +59,7 @@ public class OrderService {
     public List<ResOrder> getAllOrders() {
         List<Order> lst = orderRepository.findAll();
         List<ResOrder> lstRes = new ArrayList<>();
+        lst.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
         for (Order item : lst) {
             ResOrder res = new ResOrder();
             res.setId(item.getId());
@@ -65,6 +68,7 @@ public class OrderService {
             res.setReceiverPhone(item.getReceiverPhone());
             res.setStatus(item.getStatus());
             res.setTotalPrice(item.getTotalPrice());
+            res.setDate(item.getCreatedAt());
             lstRes.add(res);
         }
         return lstRes;
@@ -78,6 +82,7 @@ public class OrderService {
         if (lst.isEmpty()) {
             throw new OrderException("Order is emty");
         }
+        lst.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
         List<ResOrder> lstRes = new ArrayList<>();
         for (Order item : lst) {
             ResOrder res = new ResOrder();
@@ -87,6 +92,7 @@ public class OrderService {
             res.setReceiverPhone(item.getReceiverPhone());
             res.setStatus(item.getStatus());
             res.setTotalPrice(item.getTotalPrice());
+            res.setDate(item.getCreatedAt());
             lstRes.add(res);
         }
         return lstRes;

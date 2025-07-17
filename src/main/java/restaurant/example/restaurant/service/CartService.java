@@ -45,7 +45,7 @@ public class CartService {
     public void clearCart(Long cartId) {
         Cart cart = cartRepository.findById(cartId).orElse(null);
         if (cart != null) {
-            cart.setCheckedOut(false); // hoặc xử lý trạng thái tùy ý
+            // cart.setCheckedOut(false); // hoặc xử lý trạng thái tùy ý
             cartRepository.save(cart);
         }
     }

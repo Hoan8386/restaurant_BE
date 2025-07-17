@@ -14,24 +14,30 @@ import restaurant.example.restaurant.domain.response.ResCreateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUpdateUserDTO;
 import restaurant.example.restaurant.domain.response.ResUserDTO;
 import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
+import restaurant.example.restaurant.repository.RoleRepository;
 import restaurant.example.restaurant.repository.UserRepository;
+import restaurant.example.restaurant.util.constant.GenderEnum;
+
 import org.springframework.data.domain.Page;
 
 @Service
 public class UserService {
     UserRepository userRepository;
     private final RoleService roleService;
+    private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository, RoleService roleService) {
+    public UserService(UserRepository userRepository, RoleService roleService, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.roleService = roleService;
+        this.roleRepository = roleRepository;
     }
 
     public User CreateUser(User newUser) {
-        if (newUser.getRole() != null) {
-            Role r = this.roleService.fetchById(newUser.getRole().getId());
-            newUser.setRole(r != null ? r : null);
-        }
+        Role userRole = this.roleRepository.findByName("SUPER_ADMIN");
+        newUser.setRole(userRole);
+        newUser.setAddress("aa");
+        newUser.setPhone("1234567890");
+        newUser.setGender(GenderEnum.MALE);
         return this.userRepository.save(newUser);
     }
 
@@ -48,7 +54,26 @@ public class UserService {
     }
 
     public User handelUpdateUser(User updateUser) {
-        return this.userRepository.save(updateUser);
+
+        Optional<User> optionalUser = this.userRepository.findById(updateUser.getId());
+        User user = new User();
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
+        }
+        if (updateUser.getAddress() != null) {
+            user.setAddress(updateUser.getAddress());
+        }
+        if (updateUser.getGender() != null) {
+            user.setGender(updateUser.getGender());
+        }
+        if (updateUser.getPhone() != null) {
+            user.setPhone(updateUser.getPhone());
+        }
+        if (updateUser.getUsername() != null) {
+            user.setUsername(updateUser.getUsername());
+        }
+
+        return this.userRepository.save(user);
     }
 
     public ResultPaginationDataDTO handelGetAllUser(Specification<User> spec, Pageable pageable) {
@@ -110,7 +135,7 @@ public class UserService {
     public ResUpdateUserDTO convertToResUpdateUserDTO(User user) {
         ResUpdateUserDTO res = new ResUpdateUserDTO();
         res.setId(user.getId());
-        res.setName(user.getUsername());
+        res.setUsername(user.getUsername());
         res.setPhone(user.getPhone());
         res.setUpdatedAt(user.getUpdatedAt());
         res.setGender(user.getGender());

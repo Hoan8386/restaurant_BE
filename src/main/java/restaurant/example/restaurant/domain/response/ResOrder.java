@@ -1,5 +1,7 @@
 package restaurant.example.restaurant.domain.response;
 
+import java.time.Instant;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,5 +22,8 @@ public class ResOrder {
 
     private String receiverPhone;
 
+    private Instant date;
+
     private String status;
+
 }

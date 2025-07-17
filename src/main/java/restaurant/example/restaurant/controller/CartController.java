@@ -158,15 +158,15 @@ public class CartController {
 
         // Tạo order từ cart
         Order order = orderService.createOrderFromCart(cart, request.getReceiverName(),
-                request.getReceiverPhone(), request.getReceiverAddress());
+                request.getReceiverPhone(), request.getReceiverAddress(), request.getReceiverEmail());
 
         // Xóa cartDetail sau khi checkout
         for (CartDetail detail : cart.getCartDetails()) {
             cartDetailService.handleDeleteByID(detail.getId());
         }
 
-        cart.setCheckedOut(true);
-        cartService.save(cart); // hoặc cartRepository.save(cart)
+        // cart.setCheckedOut(true);
+        // cartService.save(cart); // hoặc cartRepository.save(cart)
         ResOrder res = new ResOrder();
         res.setId(order.getId());
         res.setReceiverAddress(order.getReceiverAddress());

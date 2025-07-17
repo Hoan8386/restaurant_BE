@@ -32,6 +32,8 @@ public class Order {
 
     private String receiverPhone;
 
+    private String receiverEmail;
+
     private String status;
 
     // user id

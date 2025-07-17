@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import restaurant.example.restaurant.config.JwtConfiguration;
+import restaurant.example.restaurant.domain.Role;
 import restaurant.example.restaurant.domain.User;
 import restaurant.example.restaurant.domain.response.ResCreateUserDTO;
 import restaurant.example.restaurant.domain.response.ResLoginDTO;
@@ -110,6 +111,7 @@ public class AuthController {
         String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
         postManUser.setPassword(hashPassword);
         User ericUser = this.userService.CreateUser(postManUser);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(this.userService.convertToResCreateUserDTO(ericUser));
     }

@@ -10,6 +10,8 @@ import restaurant.example.restaurant.domain.Order;
 import restaurant.example.restaurant.domain.response.ResOrder;
 import restaurant.example.restaurant.service.OrderService;
 import restaurant.example.restaurant.util.error.OrderException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/orders")
@@ -45,6 +47,11 @@ public class OrderController {
         ResOrder res = orderService.getOrderById(id);
 
         return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/ListDish/{id}")
+    public String getMethodName(@PathVariable Long id) {
+        return new String();
     }
 
     /**

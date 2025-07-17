@@ -13,4 +13,5 @@ public class CheckoutRequest {
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
+    private String receiverEmail;
 }
