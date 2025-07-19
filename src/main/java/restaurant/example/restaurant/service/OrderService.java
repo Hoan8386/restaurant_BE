@@ -1,9 +1,14 @@
 package restaurant.example.restaurant.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import restaurant.example.restaurant.domain.*;
 import restaurant.example.restaurant.domain.response.ResOrder;
+import restaurant.example.restaurant.domain.response.ResOrderItem;
+import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
 import restaurant.example.restaurant.repository.*;
 import restaurant.example.restaurant.util.error.OrderException;
 
@@ -55,12 +60,39 @@ public class OrderService {
         return order;
     }
 
+    public List<ResOrderItem> ListOrderItem(Long orderId) {
+        // Lấy danh sách OrderDetail theo orderId
+        System.out.println("check order id" + orderId);
+
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderId); // sửa lại tên method nếu cần
+        System.out.println("check count" + orderDetails.size());
+        List<ResOrderItem> resList = new ArrayList<>();
+
+        for (OrderDetail detail : orderDetails) {
+            ResOrderItem res = new ResOrderItem();
+            res.setId(detail.getId());
+            res.setQuantity(detail.getQuantity());
+            res.setPrice(detail.getPrice());
+            res.setTotal(detail.getPrice() * detail.getQuantity());
+
+            if (detail.getDish() != null) {
+                res.setName(detail.getDish().getName());
+                res.setImageUrl(detail.getDish().getImageUrl());
+            }
+
+            resList.add(res);
+        }
+        System.out.println("check count 2" + resList.size());
+
+        return resList;
+    }
+
     /** ✅ Lấy tất cả đơn hàng */
-    public List<ResOrder> getAllOrders() {
-        List<Order> lst = orderRepository.findAll();
+    public ResultPaginationDataDTO getAllOrders(Specification<Order> spec, Pageable pageable) {
+        Page<Order> pageOrder = this.orderRepository.findAll(spec, pageable);
         List<ResOrder> lstRes = new ArrayList<>();
-        lst.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
-        for (Order item : lst) {
+        // lst.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
+        for (Order item : pageOrder) {
             ResOrder res = new ResOrder();
             res.setId(item.getId());
             res.setReceiverAddress(item.getReceiverAddress());
@@ -69,9 +101,19 @@ public class OrderService {
             res.setStatus(item.getStatus());
             res.setTotalPrice(item.getTotalPrice());
             res.setDate(item.getCreatedAt());
+            res.setListOrderItem(ListOrderItem(item.getId()));
             lstRes.add(res);
         }
-        return lstRes;
+        ResultPaginationDataDTO rs = new ResultPaginationDataDTO();
+        ResultPaginationDataDTO.Meta meta = new ResultPaginationDataDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+
+        meta.setPages(pageOrder.getTotalPages());
+        meta.setTotal(pageOrder.getTotalElements());
+        rs.setMeta(meta);
+        rs.setResult(lstRes);
+        return rs;
 
     }
 

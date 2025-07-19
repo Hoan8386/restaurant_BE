@@ -2,16 +2,20 @@ package restaurant.example.restaurant.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.turkraft.springfilter.boot.Filter;
+
+import restaurant.example.restaurant.domain.Dish;
 import restaurant.example.restaurant.domain.Order;
 import restaurant.example.restaurant.domain.response.ResOrder;
+import restaurant.example.restaurant.domain.response.ResultPaginationDataDTO;
 import restaurant.example.restaurant.service.OrderService;
 import restaurant.example.restaurant.util.error.OrderException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/orders")
@@ -25,9 +29,10 @@ public class OrderController {
 
     /** ✅ 1. Hiển thị toàn bộ đơn hàng (admin/employee) */
     @GetMapping("/all")
-    public ResponseEntity<List<ResOrder>> getAllOrders() {
+    public ResponseEntity<ResultPaginationDataDTO> getAllOrders(@Filter Specification<Order> spec,
+            Pageable pageable) {
 
-        return ResponseEntity.ok(orderService.getAllOrders());
+        return ResponseEntity.ok(orderService.getAllOrders(spec, pageable));
     }
 
     /**

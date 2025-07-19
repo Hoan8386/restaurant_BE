@@ -36,7 +36,7 @@ dependencies {
 	implementation("com.turkraft.springfilter:jpa:3.1.7")
 	compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
-
+	implementation("io.minio:minio:8.5.7")
 }
 
 tasks.withType<Test> {

@@ -23,7 +23,9 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
                 "/category",
                 "/dish",
                 "/flies",
-                "/flies/**"
+                "/flies/**",
+                "/pre-signed-url/**",
+                "/error"
         };
         registry.addInterceptor(getPermissionInterceptor())
                 .excludePathPatterns(whiteList);
