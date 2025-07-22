@@ -39,9 +39,12 @@ public class OrderController {
      * ✅ 2. Hiển thị đơn hàng của người dùng hiện tại
      */
     @GetMapping("/my")
-    public ResponseEntity<List<ResOrder>> getUserOrders() throws OrderException {
+    public ResponseEntity<ResultPaginationDataDTO> getUserOrders(
+            @Filter Specification<Order> spec,
+            Pageable pageable) throws OrderException {
+
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(orderService.getOrdersByUser(email));
+        return ResponseEntity.ok(orderService.getOrdersByUser(email, spec, pageable));
     }
 
     /**

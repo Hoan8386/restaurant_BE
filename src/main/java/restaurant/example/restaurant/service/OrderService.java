@@ -4,7 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
+import java.util.Objects;
+import java.util.Comparator;
 import restaurant.example.restaurant.domain.*;
 import restaurant.example.restaurant.domain.response.ResOrder;
 import restaurant.example.restaurant.domain.response.ResOrderItem;
@@ -91,8 +92,11 @@ public class OrderService {
     public ResultPaginationDataDTO getAllOrders(Specification<Order> spec, Pageable pageable) {
         Page<Order> pageOrder = this.orderRepository.findAll(spec, pageable);
         List<ResOrder> lstRes = new ArrayList<>();
-        // lst.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
-        for (Order item : pageOrder) {
+        List<Order> lst = pageOrder.getContent();
+        // lst.sort(Comparator.comparing(Order::getCreatedAt,
+        // Comparator.nullsLast(Comparator.naturalOrder())));
+
+        for (Order item : lst) {
             ResOrder res = new ResOrder();
             res.setId(item.getId());
             res.setReceiverAddress(item.getReceiverAddress());
@@ -118,15 +122,28 @@ public class OrderService {
     }
 
     /** ✅ Lấy đơn hàng theo người dùng */
-    public List<ResOrder> getOrdersByUser(String email) throws OrderException {
+    public ResultPaginationDataDTO getOrdersByUser(String email, Specification<Order> spec, Pageable pageable)
+            throws OrderException {
+        // Lấy thông tin user
         User user = userRepository.findByEmail(email);
-        List<Order> lst = orderRepository.findByUser(user);
-        if (lst.isEmpty()) {
-            throw new OrderException("Order is emty");
+        if (user == null) {
+            throw new OrderException("User not found");
         }
-        lst.sort((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
+
+        // Gộp Specification với điều kiện user
+        Specification<Order> userSpec = (root, query, cb) -> cb.equal(root.get("user").get("id"), user.getId());
+        Specification<Order> finalSpec = (spec == null) ? userSpec : spec.and(userSpec);
+
+        // Truy vấn phân trang
+        Page<Order> pageOrder = orderRepository.findAll(finalSpec, pageable);
+
+        if (pageOrder.isEmpty()) {
+            throw new OrderException("No orders found for this user");
+        }
+
+        // Chuyển sang DTO
         List<ResOrder> lstRes = new ArrayList<>();
-        for (Order item : lst) {
+        for (Order item : pageOrder.getContent()) {
             ResOrder res = new ResOrder();
             res.setId(item.getId());
             res.setReceiverAddress(item.getReceiverAddress());
@@ -135,9 +152,21 @@ public class OrderService {
             res.setStatus(item.getStatus());
             res.setTotalPrice(item.getTotalPrice());
             res.setDate(item.getCreatedAt());
+            res.setListOrderItem(ListOrderItem(item.getId())); // bạn giữ nguyên phần này
             lstRes.add(res);
         }
-        return lstRes;
+
+        // Gói dữ liệu phân trang
+        ResultPaginationDataDTO rs = new ResultPaginationDataDTO();
+        ResultPaginationDataDTO.Meta meta = new ResultPaginationDataDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(pageOrder.getTotalPages());
+        meta.setTotal(pageOrder.getTotalElements());
+
+        rs.setMeta(meta);
+        rs.setResult(lstRes);
+        return rs;
     }
 
     /**

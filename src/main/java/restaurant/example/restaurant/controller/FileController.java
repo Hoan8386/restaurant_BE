@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -105,10 +106,11 @@ public class FileController {
 
     @PostMapping("/files")
     @ApiMessage("upload single file")
-    public ResponseEntity<Void> uploadFile(
-            @RequestPart("files") List<MultipartFile> files) {
-        storageService.upload(files);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> uploadFile(
+            @RequestPart("files") MultipartFile files) {
+        String fileName = storageService.uploadSingleFile(files);
+        return ResponseEntity.status(HttpStatus.OK).body(fileName);
+
     }
 
     @GetMapping("/files")
@@ -128,7 +130,7 @@ public class FileController {
 
     @GetMapping("/pre-signed-url/{fileName}")
     public ResponseEntity<String> getPreSignedUrl(@PathVariable("fileName") String fileName) {
-        return ResponseEntity.ok(storageService.getURL(fileName));
+        return ResponseEntity.status(HttpStatus.OK).body(storageService.getURL(fileName));
     }
 
 }

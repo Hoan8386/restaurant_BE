@@ -24,7 +24,6 @@ public class MinIOStorageService implements StorageService {
     @Override
     public void upload(List<MultipartFile> files) {
         this.ensureBucketExists(bucketName);
-
         for (MultipartFile file : files) {
             try (InputStream inputStream = file.getInputStream()) {
                 minioClient.putObject(
@@ -37,6 +36,23 @@ public class MinIOStorageService implements StorageService {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to upload file: " + file.getOriginalFilename(), e);
             }
+        }
+    }
+
+    // Phương thức overload để upload 1 file và trả về tên
+    public String uploadSingleFile(MultipartFile file) {
+        this.ensureBucketExists(bucketName);
+        try (InputStream inputStream = file.getInputStream()) {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(file.getOriginalFilename())
+                            .stream(inputStream, file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build());
+            return file.getOriginalFilename();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload file: " + file.getOriginalFilename(), e);
         }
     }
 
