@@ -1,5 +1,5 @@
 package restaurant.example.restaurant.service;
 
-public class test_01 {
+public class test_02 {
 
 }
